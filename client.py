@@ -1,56 +1,55 @@
 
+
 loop = True
 while loop:
     print("""
-    -------------------------------
-    1. Sign Up
-    2. Log In
-    3. Exit
-    -------------------------------
+            \r-------------------------------
+            \r1. Sign Up
+            \r2. Log In
+            \r3. Exit
+            \r-------------------------------
 
-    """)
-    option = input("Choose an option to continue: ")
-    match option:
-        case "1":
-            print("QUE ONDA")
-        case "2":
-            loginloop = True
-            while loginloop:
-                print("""
-    ------------------------------------
-    1. Contacts
-    2. New contact
-    3. Show a user's contact
-    4. Private chat
-    5. Group chat
-    6. Log Out
-    7. Delete account
-    8. Exit
-    ------------------------------------
-
+        """)
+    option = int(input("Choose an option to continue: "))
+    if option == 1:
+        print("QUE ONDA")
+    elif option == 2:
+        loginloop = True
+        while loginloop:
+            print("""
+                    \r------------------------------------
+                    \r1. Contacts
+                    \r2. New contact
+                    \r3. Show a user's contact
+                    \r4. Private chat
+                    \r5. Group chat
+                    \r6. Log Out
+                    \r7. Delete account
+                    \r8. Exit
+                    \r------------------------------------
                 """)
-                logoption = input("Choose an option to continue: ")
-                match logoption:
-                    case "1":
-                        print("Contacts")
-                    case "2":
-                        pass
-                    case "3":
-                        pass
-                    case "4":
-                        pass
-                    case "5":
-                        pass
-                    case "6":
-                        pass
-                    case "7":
-                        pass
-                    case "8":
-                        loginloop = False
-                    case _:
-                        print("Invalid option")
-        case "3":
-            loop = False
-        case _:
-            print("Invalid option")
+            logoption = int(input("Choose an option to continue: "))
+            
+            if logoption == 1:
+                print("Contacts")
+            elif logoption == 2:
+                pass
+            elif logoption == 3:
+                pass
+            elif logoption == 4:
+                pass
+            elif logoption == 5:
+                pass
+            elif logoption == 6:
+                pass
+            elif logoption == 7:
+                pass
+            elif logoption == 8:
+                loginloop = False
+            else:
+                print("Invalid option")
+    elif option == 3:
+        loop = False
+    else:
+        print("Invalid option")
 
