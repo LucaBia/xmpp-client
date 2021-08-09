@@ -7,7 +7,7 @@ from getpass import getpass
 from argparse import ArgumentParser
 
 
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
+# logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
 
 class Client(ClientXMPP):
     def __init__(self, username, password):
@@ -15,9 +15,13 @@ class Client(ClientXMPP):
         self.username_ = username
         self.password = password
 
+        self.add_event_handler("session_start", self.handleXMPPConnected)
         self.add_event_handler("register", self.signup)
 
-
+    def handleXMPPConnected(self, event): 
+        self.send_presence()
+        print("hola!")
+    
     async def signup(self, iq):
         self.send_presence()
         self.get_roster()
@@ -54,19 +58,27 @@ class Client(ClientXMPP):
             self.disconnect()
 
 
-# def signup(username, password):
-    # client = Client(username, password)
+def signup(username, password):
+    client = Client(username, password)
 
-    # client.register_plugin("xep_0030")
-    # client.register_plugin("xep_0004")
-    # client.register_plugin("xep_0199")
-    # client.register_plugin("xep_0066")
-    # client.register_plugin("xep_0077")
+    client.register_plugin("xep_0030")
+    client.register_plugin("xep_0004")
+    client.register_plugin("xep_0199")
+    client.register_plugin("xep_0066")
+    client.register_plugin("xep_0077")
 
-    # client["xep_0077"].force_registration = True
+    client["xep_0077"].force_registration = True
 
-    # client.connect()
-    # client.process()
+    client.connect()
+    client.process()
+
+def login(username, password):
+    client = Client(username, password)
+    client.register_plugin("xep_0030")
+    client.register_plugin("xep_0199")
+
+    client.connect()
+    client.process(forever=False)
 
 
 
@@ -97,57 +109,49 @@ while loop:
         print("Opcion 1")
         user = input("Username (user@alumchat.xyz): ")
         password = input("Password: ")
-        # signup(user, password)
+        signup(user, password)
+        print("HOSDAGJDOIGJISDJGIJSDFGJSDFIGJIDSJGIDSJGIJSDGISJDG")
 
-        client = Client(user, password)
-
-        client.register_plugin("xep_0030")
-        client.register_plugin("xep_0004")
-        client.register_plugin("xep_0199")
-        client.register_plugin("xep_0066")
-        client.register_plugin("xep_0077")
-
-        client["xep_0077"].force_registration = True
-
-        client.connect()
-        client.process()
-
-        print("******************************HOLAAAAAA***************************")
     elif option == 2:
-        loginloop = True
-        while loginloop:
-            print("""
-                    \r------------------------------------
-                    \r1. Contacts
-                    \r2. New contact
-                    \r3. Show a user's contact
-                    \r4. Private chat
-                    \r5. Group chat
-                    \r6. Log Out
-                    \r7. Delete account
-                    \r8. Exit
-                    \r------------------------------------
-                """)
-            logoption = int(input("Choose an option to continue: "))
+        print("Opcion 2")
+        user = input("Username (user@alumchat.xyz): ")
+        password = input("Password: ")
+        login(user, password)
+        print("HOSDAGJDOIGJISDJGIJSDFGJSDFIGJIDSJGIDSJGIJSDGISJDG")
+        # loginloop = True
+        # while loginloop:
+        #     print("""
+        #             \r------------------------------------
+        #             \r1. Contacts
+        #             \r2. New contact
+        #             \r3. Show a user's contact
+        #             \r4. Private chat
+        #             \r5. Group chat
+        #             \r6. Log Out
+        #             \r7. Delete account
+        #             \r8. Exit
+        #             \r------------------------------------
+        #         """)
+        #     logoption = int(input("Choose an option to continue: "))
             
-            if logoption == 1:
-                print("Contacts")
-            elif logoption == 2:
-                pass
-            elif logoption == 3:
-                pass
-            elif logoption == 4:
-                pass
-            elif logoption == 5:
-                pass
-            elif logoption == 6:
-                pass
-            elif logoption == 7:
-                pass
-            elif logoption == 8:
-                loginloop = False
-            else:
-                print("Invalid option")
+        #     if logoption == 1:
+        #         print("Contacts")
+        #     elif logoption == 2:
+        #         pass
+        #     elif logoption == 3:
+        #         pass
+        #     elif logoption == 4:
+        #         pass
+        #     elif logoption == 5:
+        #         pass
+        #     elif logoption == 6:
+        #         pass
+        #     elif logoption == 7:
+        #         pass
+        #     elif logoption == 8:
+        #         loginloop = False
+        #     else:
+        #         print("Invalid option")
     elif option == 3:
         loop = False
     else:
