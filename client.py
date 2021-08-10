@@ -7,7 +7,7 @@ from getpass import getpass
 from argparse import ArgumentParser
 
 
-# logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)-8s %(message)s")
 
 class Client(ClientXMPP):
     def __init__(self, username, password):
@@ -18,9 +18,51 @@ class Client(ClientXMPP):
         self.add_event_handler("session_start", self.handleXMPPConnected)
         self.add_event_handler("register", self.signup)
 
-    def handleXMPPConnected(self, event): 
+    async def handleXMPPConnected(self, event): 
         self.send_presence()
-        print("hola!")
+        await self.get_roster()
+            
+        def contacts():
+            print("CONTACTS")
+
+        loginloop = True
+        while loginloop:
+            print("""
+                    \r------------------------------------
+                    \r1. Contacts
+                    \r2. New contact
+                    \r3. Show a user's contact
+                    \r4. Private chat
+                    \r5. Group chat
+                    \r6. Log Out
+                    \r7. Delete account
+                    \r------------------------------------
+                """)
+
+            logoption = int(input("Choose an option to continue: "))
+            
+            if logoption == 1:
+                contacts()
+            elif logoption == 2:
+                pass
+            elif logoption == 3:
+                pass
+            elif logoption == 4:
+                pass
+            elif logoption == 5:
+                pass
+            elif logoption == 6:
+                self.disconnect()
+                loginloop = False
+            elif logoption == 7:
+                pass
+            else:
+                print("Invalid option")
+
+
+
+
+
     
     async def signup(self, iq):
         self.send_presence()
@@ -88,11 +130,6 @@ def login(username, password):
 #         slixmpp.ClientXMPP.__init__(self, jid, password)
 
 
-    
-#     def SignUp(usr, psw):
-#         return None
-
-
 
 loop = True
 while loop:
@@ -110,7 +147,6 @@ while loop:
         user = input("Username (user@alumchat.xyz): ")
         password = input("Password: ")
         signup(user, password)
-        print("HOSDAGJDOIGJISDJGIJSDFGJSDFIGJIDSJGIDSJGIJSDGISJDG")
 
     elif option == 2:
         print("Opcion 2")
@@ -118,40 +154,7 @@ while loop:
         password = input("Password: ")
         login(user, password)
         print("HOSDAGJDOIGJISDJGIJSDFGJSDFIGJIDSJGIDSJGIJSDGISJDG")
-        # loginloop = True
-        # while loginloop:
-        #     print("""
-        #             \r------------------------------------
-        #             \r1. Contacts
-        #             \r2. New contact
-        #             \r3. Show a user's contact
-        #             \r4. Private chat
-        #             \r5. Group chat
-        #             \r6. Log Out
-        #             \r7. Delete account
-        #             \r8. Exit
-        #             \r------------------------------------
-        #         """)
-        #     logoption = int(input("Choose an option to continue: "))
-            
-        #     if logoption == 1:
-        #         print("Contacts")
-        #     elif logoption == 2:
-        #         pass
-        #     elif logoption == 3:
-        #         pass
-        #     elif logoption == 4:
-        #         pass
-        #     elif logoption == 5:
-        #         pass
-        #     elif logoption == 6:
-        #         pass
-        #     elif logoption == 7:
-        #         pass
-        #     elif logoption == 8:
-        #         loginloop = False
-        #     else:
-        #         print("Invalid option")
+        
     elif option == 3:
         loop = False
     else:
