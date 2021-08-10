@@ -20,7 +20,13 @@ class Client(ClientXMPP):
 
     async def handleXMPPConnected(self, event): 
         self.send_presence()
-        await self.get_roster()
+
+        def send_private_message():
+            recipient = input("Recipient: ")
+            message = input("Message: ")
+
+            self.send_message(mto=recipient, mbody=message, mtype="chat")
+            print("Message sent!")
             
         def contacts():
             print("CONTACTS")
@@ -48,7 +54,7 @@ class Client(ClientXMPP):
             elif logoption == 3:
                 pass
             elif logoption == 4:
-                pass
+                send_private_message()  
             elif logoption == 5:
                 pass
             elif logoption == 6:
@@ -58,6 +64,9 @@ class Client(ClientXMPP):
                 pass
             else:
                 print("Invalid option")
+
+            await self.get_roster()
+            
 
 
 
