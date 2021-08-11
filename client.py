@@ -54,27 +54,24 @@ class Client(ClientXMPP):
 
         def contact_details():
             self.get_roster()
-            print('Roster for %s' % self.boundjid.bare)
-            groups = self.client_roster.groups()
-            for group in groups:
-                print('\n%s' % group)
-                print('-' * 72)
-                for jid in groups[group]:
-                    sub = self.client_roster[jid]['subscription']
-                    name = self.client_roster[jid]['name']
-                    if self.client_roster[jid]['name']:
-                        print(' %s (%s) [%s]' % (name, jid, sub))
-                    else:
-                        print(' %s [%s]' % (jid, sub))
 
-                    connections = self.client_roster.presence(jid)
-                    for res, pres in connections.items():
-                        show = 'available'
-                        if pres['show']:
-                            show = pres['show']
-                        print('   - %s (%s)' % (res, show))
-                        if pres['status']:
-                            print('       %s' % pres['status'])
+            contact_user = input("Contact username: ")
+
+            name = self.client_roster[contact_user]['name']
+            print('\n %s (%s)' % (name, contact_user))
+
+            connections = self.client_roster.presence(contact_user)
+
+            if connections == {}:
+                print("           xa")
+                print("    No recent session")
+    
+            for res, pres in connections.items():
+                show = 'available'
+                if pres['show']:
+                    show = pres['show']
+                print('   - ', res, ' - ', show)
+                print('       ',  pres['status'])
 
 
         def send_private_message():
@@ -231,7 +228,6 @@ while loop:
         user = input("Username (user@alumchat.xyz): ")
         password = input("Password: ")
         login(user, password)
-        print("HOSDAGJDOIGJISDJGIJSDFGJSDFIGJIDSJGIDSJGIJSDGISJDG")
         
     elif option == 3:
         loop = False
