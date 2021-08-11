@@ -2,13 +2,6 @@ import slixmpp
 from slixmpp import ClientXMPP
 from slixmpp.exceptions import IqError, IqTimeout
 
-from slixmpp.stanza import StreamFeatures, Iq
-from slixmpp.xmlstream import register_stanza_plugin, JID
-from slixmpp.xmlstream.handler import CoroutineCallback
-from slixmpp.xmlstream.matcher import StanzaPath
-from slixmpp.plugins import BasePlugin
-from slixmpp.plugins.xep_0077 import stanza, Register, RegisterFeature
-
 import logging
 from getpass import getpass
 from argparse import ArgumentParser
@@ -28,12 +21,45 @@ class Client(ClientXMPP):
     async def handleXMPPConnected(self, event): 
         self.send_presence()
 
+        def contacts():
+            print("CONTACTS")
+
+        def new_contact():
+            new_contact_user = input("New contact username: ")
+            self.send_presence_subscription(pto=new_contact_user)
+            message="Hi new friend!"
+            self.send_message(mto=new_contact_user, mbody=message, mtype="chat", mfrom=self.boundjid.bare)
+
         def send_private_message():
             recipient = input("Recipient: ")
             message = input("Message: ")
 
             self.send_message(mto=recipient, mbody=message, mtype="chat")
             print("Message sent!")
+
+        def upload_file():
+            log = logging.getLogger(__name__)
+
+            recipient = input("Recipient: ")
+            file = input("File name: ")
+            url = self['xep_0363'].upload_file(file, domain="alumchat.xyz", timeout=10)
+
+            log.info('Sending file to %s', recipient)
+            html = (
+                f'<body xmlns="http://www.w3.org/1999/xhtml">'
+                f'<a href="{url}">{url}</a></body>'
+            )
+            message = self.make_message(mto=recipient, mbody=url, mhtml=html)
+            message['oob']['url'] = url
+            message.send()
+            # xmpp.connect()
+            # xmpp.process(forever=False)
+
+            self.register_plugin('xep_0066')
+            self.register_plugin('xep_0071')
+            self.register_plugin('xep_0128')
+            self.register_plugin('xep_0363')
+
 
         def delete_account():
             self.register_plugin("xep_0030")
@@ -46,25 +72,11 @@ class Client(ClientXMPP):
             delete['type'] = 'set'
             delete['from'] = self.boundjid.user
             delete['register']['remove'] = True
-
-            # # delete['register']['remove'] == True
-            # self.backend.unregister(delete['from'].bare)
-            # self.xmpp.event('unregistered_user', delete)
-            # delete.reply().send()
-
-            # self["xep_0077"].user_unregister = True
-            # self.api["user_remove"](None, None, delete["from"], delete)
-
-            # delete['command']['xmlns']="http://jabber.org/protocol/commands"
-            # delete['command']['action']="execute"
-            # delete['command']['node']="http://jabber.org/protocol/admin#delete-user"
             delete.send()
 
             print("Account deleted succesfully.")
             self.disconnect()
             
-        def contacts():
-            print("CONTACTS")
 
         loginloop = True
         while loginloop:
@@ -74,9 +86,10 @@ class Client(ClientXMPP):
                     \r2. New contact
                     \r3. Show a user's contact
                     \r4. Private chat
-                    \r5. Group chat
-                    \r6. Log Out
-                    \r7. Delete account
+                    \r5. Send a file
+                    \r6. Group chat
+                    \r7. Log Out
+                    \r8. Delete account
                     \r------------------------------------
                 """)
 
@@ -85,17 +98,19 @@ class Client(ClientXMPP):
             if logoption == 1:
                 contacts()
             elif logoption == 2:
-                pass
+                new_contact()
             elif logoption == 3:
                 pass
             elif logoption == 4:
                 send_private_message()  
             elif logoption == 5:
-                pass
+                upload_file()
             elif logoption == 6:
+                pass
+            elif logoption == 7:
                 self.disconnect()
                 loginloop = False
-            elif logoption == 7:
+            elif logoption == 8:
                 delete_account()
             else:
                 print("Invalid option")
@@ -165,7 +180,6 @@ def login(username, password):
 
     client.connect()
     client.process(forever=False)
-
 
 
 loop = True
