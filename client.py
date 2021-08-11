@@ -2,6 +2,13 @@ import slixmpp
 from slixmpp import ClientXMPP
 from slixmpp.exceptions import IqError, IqTimeout
 
+from slixmpp.stanza import StreamFeatures, Iq
+from slixmpp.xmlstream import register_stanza_plugin, JID
+from slixmpp.xmlstream.handler import CoroutineCallback
+from slixmpp.xmlstream.matcher import StanzaPath
+from slixmpp.plugins import BasePlugin
+from slixmpp.plugins.xep_0077 import stanza, Register, RegisterFeature
+
 import logging
 from getpass import getpass
 from argparse import ArgumentParser
@@ -27,6 +34,34 @@ class Client(ClientXMPP):
 
             self.send_message(mto=recipient, mbody=message, mtype="chat")
             print("Message sent!")
+
+        def delete_account():
+            self.register_plugin("xep_0030")
+            self.register_plugin("xep_0004")
+            self.register_plugin("xep_0199")
+            self.register_plugin("xep_0066")
+            self.register_plugin("xep_0077")
+
+            delete = self.Iq()
+            delete['type'] = 'set'
+            delete['from'] = self.boundjid.user
+            delete['register']['remove'] = True
+
+            # # delete['register']['remove'] == True
+            # self.backend.unregister(delete['from'].bare)
+            # self.xmpp.event('unregistered_user', delete)
+            # delete.reply().send()
+
+            # self["xep_0077"].user_unregister = True
+            # self.api["user_remove"](None, None, delete["from"], delete)
+
+            # delete['command']['xmlns']="http://jabber.org/protocol/commands"
+            # delete['command']['action']="execute"
+            # delete['command']['node']="http://jabber.org/protocol/admin#delete-user"
+            delete.send()
+
+            print("Account deleted succesfully.")
+            self.disconnect()
             
         def contacts():
             print("CONTACTS")
@@ -61,7 +96,7 @@ class Client(ClientXMPP):
                 self.disconnect()
                 loginloop = False
             elif logoption == 7:
-                pass
+                delete_account()
             else:
                 print("Invalid option")
 
@@ -130,13 +165,6 @@ def login(username, password):
 
     client.connect()
     client.process(forever=False)
-
-
-
-# class SendMsgBot(slixmpp.ClientXMPP):
-
-#     def __init__(self, jid, password, recipient, message):
-#         slixmpp.ClientXMPP.__init__(self, jid, password)
 
 
 
