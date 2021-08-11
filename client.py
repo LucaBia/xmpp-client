@@ -84,6 +84,30 @@ class Client(ClientXMPP):
         def upload_file():
             self.register_plugin('xep_0363')
 
+        
+        def change_presence():
+            print("""
+                    \r1.chat(available)
+                    \r2.away(gone for short period of time)
+                    \r3.xa(Extended away)
+                    \r4.dnd(Do not disturb)
+            """)
+            presence_option = int(input("Choose a status: "))
+            if presence_option == 1:
+                show = "chat"
+                status = "Available"
+            elif presence_option == 2:
+                show = "away"
+                status = "A bit busy"
+            elif presence_option == 3:
+                show = "xa"
+                status = "Busy"
+            elif presence_option == 4:
+                show = "dnd"
+                status = "Do not disturb"
+                
+            self.send_presence(pshow=show, pstatus=status)
+
 
         def delete_account():
             self.register_plugin("xep_0030")
@@ -112,8 +136,9 @@ class Client(ClientXMPP):
                     \r4. Private chat
                     \r5. Send a file
                     \r6. Group chat
-                    \r7. Log Out
-                    \r8. Delete account
+                    \r7. Change status
+                    \r8. Log Out
+                    \r9. Delete account
                     \r------------------------------------
                 """)
 
@@ -132,20 +157,17 @@ class Client(ClientXMPP):
             elif logoption == 6:
                 pass
             elif logoption == 7:
+                change_presence()
+            elif logoption == 8:
                 self.disconnect()
                 loginloop = False
-            elif logoption == 8:
+            elif logoption == 9:
                 delete_account()
             else:
                 print("Invalid option")
 
             await self.get_roster()
             
-
-
-
-
-
     
     async def signup(self, iq):
         self.send_presence()
@@ -233,4 +255,3 @@ while loop:
         loop = False
     else:
         print("Invalid option")
-
