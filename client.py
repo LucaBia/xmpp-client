@@ -21,14 +21,61 @@ class Client(ClientXMPP):
     async def handleXMPPConnected(self, event): 
         self.send_presence()
 
+        await self.get_roster()
+
         def contacts():
-            print("CONTACTS")
+            groups = self.client_roster.groups()
+            for group in groups:
+                print(group)
+                print('------------------------------------------')
+                for jid in groups[group]:
+                    name = self.client_roster[jid]['name']
+                    if self.client_roster[jid]['name']:
+                        print('\n', name, ' (',jid,')')
+                    else:
+                        print('\n', jid)
+
+                    connections = self.client_roster.presence(jid)
+                    for res, pres in connections.items():
+                        show = 'available'
+                        if pres['show']:
+                            show = pres['show']
+                        print('   - ',res, '(',show,')')
+                        if pres['status']:
+                            print('       ', pres['status'])
+            print('------------------------------------------')
+            
 
         def new_contact():
             new_contact_user = input("New contact username: ")
             self.send_presence_subscription(pto=new_contact_user)
             message="Hi new friend!"
             self.send_message(mto=new_contact_user, mbody=message, mtype="chat", mfrom=self.boundjid.bare)
+
+        def contact_details():
+            self.get_roster()
+            print('Roster for %s' % self.boundjid.bare)
+            groups = self.client_roster.groups()
+            for group in groups:
+                print('\n%s' % group)
+                print('-' * 72)
+                for jid in groups[group]:
+                    sub = self.client_roster[jid]['subscription']
+                    name = self.client_roster[jid]['name']
+                    if self.client_roster[jid]['name']:
+                        print(' %s (%s) [%s]' % (name, jid, sub))
+                    else:
+                        print(' %s [%s]' % (jid, sub))
+
+                    connections = self.client_roster.presence(jid)
+                    for res, pres in connections.items():
+                        show = 'available'
+                        if pres['show']:
+                            show = pres['show']
+                        print('   - %s (%s)' % (res, show))
+                        if pres['status']:
+                            print('       %s' % pres['status'])
+
 
         def send_private_message():
             recipient = input("Recipient: ")
@@ -38,26 +85,6 @@ class Client(ClientXMPP):
             print("Message sent!")
 
         def upload_file():
-            log = logging.getLogger(__name__)
-
-            recipient = input("Recipient: ")
-            file = input("File name: ")
-            url = self['xep_0363'].upload_file(file, domain="alumchat.xyz", timeout=10)
-
-            log.info('Sending file to %s', recipient)
-            html = (
-                f'<body xmlns="http://www.w3.org/1999/xhtml">'
-                f'<a href="{url}">{url}</a></body>'
-            )
-            message = self.make_message(mto=recipient, mbody=url, mhtml=html)
-            message['oob']['url'] = url
-            message.send()
-            # xmpp.connect()
-            # xmpp.process(forever=False)
-
-            self.register_plugin('xep_0066')
-            self.register_plugin('xep_0071')
-            self.register_plugin('xep_0128')
             self.register_plugin('xep_0363')
 
 
@@ -83,8 +110,8 @@ class Client(ClientXMPP):
             print("""
                     \r------------------------------------
                     \r1. Contacts
-                    \r2. New contact
-                    \r3. Show a user's contact
+                    \r2. Add a new contact
+                    \r3. Show a user's contact details
                     \r4. Private chat
                     \r5. Send a file
                     \r6. Group chat
@@ -100,7 +127,7 @@ class Client(ClientXMPP):
             elif logoption == 2:
                 new_contact()
             elif logoption == 3:
-                pass
+                contact_details()
             elif logoption == 4:
                 send_private_message()  
             elif logoption == 5:
