@@ -17,6 +17,7 @@ class Client(ClientXMPP):
 
         self.add_event_handler("session_start", self.handleXMPPConnected)
         self.add_event_handler("register", self.signup)
+        self.add_event_handler("message", self.inbox)
 
     async def handleXMPPConnected(self, event): 
         self.send_presence()
@@ -81,6 +82,7 @@ class Client(ClientXMPP):
             self.send_message(mto=recipient, mbody=message, mtype="chat")
             print("Message sent!")
 
+
         def upload_file():
             self.register_plugin('xep_0363')
 
@@ -105,7 +107,7 @@ class Client(ClientXMPP):
             elif presence_option == 4:
                 show = "dnd"
                 status = "Do not disturb"
-                
+
             self.send_presence(pshow=show, pstatus=status)
 
 
@@ -203,6 +205,11 @@ class Client(ClientXMPP):
         except IqTimeout:
             logging.error("No response from server.")
             self.disconnect()
+
+    def inbox(self, message):
+        print(str(message["from"]), ":  ", message["body"])
+
+    
 
 
 def signup(username, password):
