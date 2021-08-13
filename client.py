@@ -27,6 +27,14 @@ class Client(ClientXMPP):
         # We await to get our contacts
         await self.get_roster()
 
+        def notification(to, state):
+            self.register_plugin("xep_0085")
+            message = self.Message()
+            message["chat_state"] = state
+            message["to"] = to
+
+            message.send()
+
         def contacts():
             # Clasify our contacts in groups
             groups = self.client_roster.groups()
@@ -86,34 +94,28 @@ class Client(ClientXMPP):
 
         # Send a direct message to a contact.
         def send_private_message():
+            self.register_plugin("xep_0085")
+
             recipient = input("Recipient: ")
+            notification(recipient, "composing")
             message = input("Message: ")
 
             self.send_message(mto=recipient, mbody=message, mtype="chat")
+            notification(recipient, "paused")
             print("Message sent!")
 
-        # Methos to join and send a message to a group chat.
+
+        # Method to join and send a message to a group chat.
         def send_group_message():
             self.register_plugin('xep_0030')
             self.register_plugin('xep_0045')
             self.register_plugin('xep_0199')
 
-            print("""
-                    \r1. Join Group
-                    \r2. Send Message
-            """)
-            option = int(input("Choose an option: "))
-            if option == 1:
-                room = input("Group Name: ")
-                nickname = input("Nickname: ")
-                self.plugin['xep_0045'].join_muc(room+"@conference.alumchat.xyz", nickname)
-            elif option == 2:
-                room = input("Group name: ")
-                message = input('Message: ')
-                self.send_message(mto=room+"@conference.alumchat.xyz", mbody=message, mtype='groupchat')
-
-            self.connect()
-            self.process()
+            room = input("Group name: ")
+            nickname = input("Nickname: ")
+            message = input('Message: ')
+            self.plugin['xep_0045'].join_muc(room+"@conference.alumchat.xyz", nickname)
+            self.send_message(mto=room+"@conference.alumchat.xyz", mbody=message, mtype='groupchat')
 
         def upload_file():
             self.register_plugin('xep_0363')
@@ -225,6 +227,7 @@ class Client(ClientXMPP):
             logging.error("No response from server.")
             self.disconnect()
 
+    # Method to get a message if there's a new one
     def inbox(self, message):
         print(str(message["from"]), ":  ", message["body"])
 
