@@ -114,11 +114,11 @@ class Client(ClientXMPP):
             room = input("Group name: ")
             nickname = input("Nickname: ")
             message = input('Message: ')
+            # Join to a chat room
             self.plugin['xep_0045'].join_muc(room+"@conference.alumchat.xyz", nickname)
+            #  send message to group
             self.send_message(mto=room+"@conference.alumchat.xyz", mbody=message, mtype='groupchat')
 
-        def upload_file():
-            self.register_plugin('xep_0363')
 
         # Upload the status and presence
         def change_presence():
@@ -189,7 +189,7 @@ class Client(ClientXMPP):
             elif logoption == 4:
                 send_private_message()  
             elif logoption == 5:
-                upload_file()
+                await self.upload_fileee()
             elif logoption == 6:
                 send_group_message()
             elif logoption == 7:
@@ -231,6 +231,24 @@ class Client(ClientXMPP):
     def inbox(self, message):
         print(str(message["from"]), ":  ", message["body"])
 
+    # For send a file (https://lab.louiz.org/poezio/slixmpp/-/blob/master/examples/http_upload.py)
+    async def upload_fileee(self):
+        recipient = input("Recipient: ")
+        filename = input("File: ")
+
+        logging.info('Uploading file %s...', filename)
+        try:
+            url = await self['xep_0363'].upload_file(filename, domain=None, timeout=10)
+        except IqTimeout:
+            raise TimeoutError('Could not send message in time')
+        except IqError as e:
+            print(e)
+
+        logging.info('Upload success!')
+        logging.info('Sending file to %s', recipient)
+
+        message = self.make_message(mto=recipient, mbody=url)
+        message.send()
     
 
 # Method to register a new user
@@ -256,6 +274,8 @@ def login(username, password):
     client = Client(username, password)
     client.register_plugin("xep_0030")
     client.register_plugin("xep_0199")
+    client.register_plugin('xep_0363')
+
 
     client.connect()
     client.process(forever=False)
@@ -273,13 +293,11 @@ while loop:
         """)
     option = int(input("Choose an option to continue: "))
     if option == 1:
-        print("Opcion 1")
         user = input("Username: ")
         password = input("Password: ")
         signup(user, password)
 
     elif option == 2:
-        print("Opcion 2")
         user = input("Username: ")
         password = input("Password: ")
         login(user, password)
