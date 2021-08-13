@@ -19,13 +19,18 @@ class Client(ClientXMPP):
         self.add_event_handler("register", self.signup)
         self.add_event_handler("message", self.inbox)
 
-    async def handleXMPPConnected(self, event): 
-        self.send_presence()
+        # self.add_event_handler("groupchat_message", self.handleXMPPConnected.send_group_message)
 
+    async def handleXMPPConnected(self, event):
+        # Set us available
+        self.send_presence()
+        # We await to get our contacts
         await self.get_roster()
 
         def contacts():
+            # Clasify our contacts in groups
             groups = self.client_roster.groups()
+            # For every group we print the information available of that contact
             for group in groups:
                 print(group)
                 print('------------------------------------------')
@@ -46,13 +51,16 @@ class Client(ClientXMPP):
                             print('       ', pres['status'])
             print('------------------------------------------')
             
-
+        # Add a new user to our roster.
         def new_contact():
             new_contact_user = input("New contact username: ")
+            # Petition to add the contact
             self.send_presence_subscription(pto=new_contact_user)
+            # Message to send to a new contact
             message="Hi new friend!"
             self.send_message(mto=new_contact_user, mbody=message, mtype="chat", mfrom=self.boundjid.bare)
 
+        # Get the available information of a contact
         def contact_details():
             self.get_roster()
 
@@ -63,6 +71,7 @@ class Client(ClientXMPP):
 
             connections = self.client_roster.presence(contact_user)
 
+            # If there is no recent acces que set status as xa an no recent sessio.
             if connections == {}:
                 print("           xa")
                 print("    No recent session")
@@ -75,6 +84,7 @@ class Client(ClientXMPP):
                 print('       ',  pres['status'])
 
 
+        # Send a direct message to a contact.
         def send_private_message():
             recipient = input("Recipient: ")
             message = input("Message: ")
@@ -82,11 +92,33 @@ class Client(ClientXMPP):
             self.send_message(mto=recipient, mbody=message, mtype="chat")
             print("Message sent!")
 
+        # Methos to join and send a message to a group chat.
+        def send_group_message():
+            self.register_plugin('xep_0030')
+            self.register_plugin('xep_0045')
+            self.register_plugin('xep_0199')
+
+            print("""
+                    \r1. Join Group
+                    \r2. Send Message
+            """)
+            option = int(input("Choose an option: "))
+            if option == 1:
+                room = input("Group Name: ")
+                nickname = input("Nickname: ")
+                self.plugin['xep_0045'].join_muc(room+"@conference.alumchat.xyz", nickname)
+            elif option == 2:
+                room = input("Group name: ")
+                message = input('Message: ')
+                self.send_message(mto=room+"@conference.alumchat.xyz", mbody=message, mtype='groupchat')
+
+            self.connect()
+            self.process()
 
         def upload_file():
             self.register_plugin('xep_0363')
 
-        
+        # Upload the status and presence
         def change_presence():
             print("""
                     \r1.chat(available)
@@ -110,7 +142,7 @@ class Client(ClientXMPP):
 
             self.send_presence(pshow=show, pstatus=status)
 
-
+        # Opposite the register, we delete out logged account.
         def delete_account():
             self.register_plugin("xep_0030")
             self.register_plugin("xep_0004")
@@ -157,7 +189,7 @@ class Client(ClientXMPP):
             elif logoption == 5:
                 upload_file()
             elif logoption == 6:
-                pass
+                send_group_message()
             elif logoption == 7:
                 change_presence()
             elif logoption == 8:
@@ -170,25 +202,12 @@ class Client(ClientXMPP):
 
             await self.get_roster()
             
-    
+    # We send the petitions of register to the server
     async def signup(self, iq):
+        # We send presence to be available
         self.send_presence()
+        # We get our contacts
         self.get_roster()
-
-        """
-        Fill out and submit a registration form.
-        The form may be composed of basic registration fields, a data form,
-        an out-of-band link, or any combination thereof. Data forms and OOB
-        links can be checked for as so:
-        if iq.match('iq/register/form'):
-            # do stuff with data form
-            # iq['register']['form']['fields']
-        if iq.match('iq/register/oob'):
-            # do stuff with OOB URL
-            # iq['register']['oob']['url']
-        To get the list of basic registration fields, you can use:
-            iq['register']['fields']
-        """
         
         resp = self.Iq()
         resp['type'] = 'set'
@@ -211,8 +230,9 @@ class Client(ClientXMPP):
 
     
 
-
+# Method to register a new user
 def signup(username, password):
+    # Instance of the Client class to continue with the request
     client = Client(username, password)
 
     client.register_plugin("xep_0030")
@@ -221,12 +241,15 @@ def signup(username, password):
     client.register_plugin("xep_0066")
     client.register_plugin("xep_0077")
 
+    # We force the registration
     client["xep_0077"].force_registration = True
 
     client.connect()
     client.process()
 
+# Method to login
 def login(username, password):
+    # Instance of the Client class to continue with the request in the async method
     client = Client(username, password)
     client.register_plugin("xep_0030")
     client.register_plugin("xep_0199")
@@ -248,13 +271,13 @@ while loop:
     option = int(input("Choose an option to continue: "))
     if option == 1:
         print("Opcion 1")
-        user = input("Username (user@alumchat.xyz): ")
+        user = input("Username: ")
         password = input("Password: ")
         signup(user, password)
 
     elif option == 2:
         print("Opcion 2")
-        user = input("Username (user@alumchat.xyz): ")
+        user = input("Username: ")
         password = input("Password: ")
         login(user, password)
         
